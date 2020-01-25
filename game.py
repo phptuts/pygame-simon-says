@@ -126,7 +126,6 @@ while running:
     if mode == 'simon_says' and generate_numbers:
         simon_says_squares()
         generate_numbers = False
-        print(simon_says_squares)
 
     if len(simon_says_squares_hightlight) == 0 and mode == 'simon_says' and next_square_time < pygame.time.get_ticks():
         mode = 'human'
