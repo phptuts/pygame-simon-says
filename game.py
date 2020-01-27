@@ -46,15 +46,24 @@ simon_says_squares_hightlight = []
 simon_says_remember_choices = []
 number_of_choices = 4
 
+key_pressed_dictionary = {
+    pygame.K_1: 1,
+    pygame.K_2: 2,
+    pygame.K_3: 3,
+    pygame.K_4: 4,
+    pygame.K_5: 5,
+    pygame.K_6: 6
+}
+
 
 def simon_says_squares():
     simon_says_squares_hightlight.clear()
     simon_says_remember_choices.clear()
     for i in range(0, number_of_choices):
-        random_choice = random.randint(0, 5)
+        random_choice = random.randint(1, 6)
         simon_says_squares_hightlight.append(random_choice)
         simon_says_remember_choices.append(random_choice)
-
+    print(simon_says_remember_choices)
 
 class Option(pygame.sprite.Sprite):
     # Sprite for the player
@@ -111,8 +120,10 @@ for color_square in row2:
 running = True
 mode = 'simon_says'
 generate_numbers = True
-next_square_time = pygame.time.get_ticks() + 500
+next_square_time = pygame.time.get_ticks() + 1000
 previous_choice = -1
+human_move = 1
+previous_choice_human = -1
 
 while running:
 
@@ -123,13 +134,38 @@ while running:
         # check for closing the window
         if event.type == pygame.QUIT:
             running = False
+
+        if event.type == pygame.KEYDOWN and mode == 'human' and event.key in key_pressed_dictionary:
+            sprite_list[key_pressed_dictionary[event.key] - 1].toggle_highlight()
+
+            if previous_choice_human > -1:
+                sprite_list[previous_choice_human].toggle_highlight()
+
+            if simon_says_remember_choices[human_move - 1] == key_pressed_dictionary[event.key]:
+                human_move += 1
+                previous_choice_human = key_pressed_dictionary[event.key] - 1
+                print("correct")
+                if len(simon_says_remember_choices) < human_move:
+                    mode = 'simon_says'
+                    number_of_choices += 1
+                    generate_numbers = True
+                    human_move = 1
+            else:
+                print("incorrect")
+                mode = 'game_over'
+
     if mode == 'simon_says' and generate_numbers:
         simon_says_squares()
         generate_numbers = False
+        if previous_choice_human > - 1:
+            sprite_list[previous_choice_human].toggle_highlight()
+            previous_choice_human = -1
+            next_square_time = pygame.time.get_ticks() + 2000
 
     if len(simon_says_squares_hightlight) == 0 and mode == 'simon_says' and next_square_time < pygame.time.get_ticks():
         mode = 'human'
         sprite_list[previous_choice].toggle_highlight()
+        previous_choice = -1
 
     if mode == 'simon_says' and next_square_time < pygame.time.get_ticks():
 
@@ -137,9 +173,9 @@ while running:
             sprite_list[previous_choice].toggle_highlight()
 
         choice = simon_says_squares_hightlight.pop(0)
-        sprite_list[choice].toggle_highlight()
-        previous_choice = choice
-        next_square_time = pygame.time.get_ticks() + 500
+        sprite_list[choice - 1].toggle_highlight()
+        previous_choice = choice - 1
+        next_square_time = pygame.time.get_ticks() + 1000
 
     # Update
     all_sprites.update()
